@@ -1,0 +1,23 @@
+{
+    "name": "sugiphp/ste",
+    "type": "library",
+    "description": "Template Engine",
+    "keywords": ["templates"],
+    "licence": "MIT",
+    "authors": [
+        {
+            "name": "Plamen Popov",
+            "email": "tzappa@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.3"
+    },
+    "autoload": {
+        "psr-0": { 
+            "SugiPHP\\STE\\": ""
+        }
+    },
+    "target-dir": "SugiPHP/STE",
+    "minimum-stability": "dev"
+}
