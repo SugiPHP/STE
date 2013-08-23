@@ -21,7 +21,7 @@ namespace SugiPHP\STE;
  * $tpl->loop('blockname', array( array('var1' => 'val1', 'var2' => 'val2'), array('var1' => 'otherval') ));
  * $tpl->hide('unwantendblock');
  * $tpl->unhide('someblockthatwashidden');
- * $tpl->register_function('__', '__'); // for translations
+ * $tpl->registerFunction('__', '__'); // for translations
  *
  * echo $tpl->parse();
  * </code>
@@ -136,7 +136,7 @@ class Ste
 	protected $include_path;
 
 	/**
-	 * Constructor
+	 * STE Constructor.
 	 * 
 	 * @param array $config
 	 */
@@ -156,31 +156,37 @@ class Ste
 	}
 
 	/**
-	 * Loads a template file
+	 * Sets raw template.
 	 * 
-	 * @param string filename
+	 * @param string $template
+	 */
+	public function setTemplate($template)
+	{
+		$this->tpl = $template;
+	}
+
+	/**
+	 * Returns raw template.
+	 * 
+	 * @return string
+	 */
+	public function getTemplate()
+	{
+		return $this->tpl;
+	}
+
+	/**
+	 * Loads a template file.
+	 * 
+	 * @param  string filename
 	 * @return string
 	 */
 	public function load($template_file)
 	{
 		$template = $this->loadFile($template_file);
+		$this->setTemplate($template);
 
-		return $this->template($template);
-	}
-
-	/**
-	 * Sets raw template. If used with no parameter only returns raw template
-	 * 
-	 * @param string $template
-	 * @return string
-	 */
-	public function template($template = null)
-	{
-		if (!is_null($template)) {
-			$this->tpl = $template;
-		}
-
-		return $this->tpl;
+		return $template;
 	}
 
 	/**
@@ -196,33 +202,48 @@ class Ste
 	 * @param mixed $var
 	 * @param mixed $value
 	 */
-	public function set($var, $value = null)
+	public function set($var, $value)
 	{
 		if (is_array($var)) {
 			$this->vars = array_merge($this->vars, $var);
-		}
-		elseif (is_null($value)) {
-			if (isset($this->vars[$var])) unset($this->vars[$var]);
-		}
-		elseif (is_array($value) and isset($this->vars[$var]) and is_array($this->vars[$var])) {
+		} elseif (is_array($value) and isset($this->vars[$var]) and is_array($this->vars[$var])) {
 			$this->vars[$var] = array_merge($this->vars[$var], $value);
-		}		
-		else {
+		} else {
 			$this->vars[$var] = $value;
 		}
 	}
 
 	/**
-	 *  returns if parameter is set or not
+	 * Returns previously set variable.
 	 * 
-	 * @param string $var
+	 * @param  string $var
+	 * @return mixed
+	 */
+	public function get($var)
+	{
+		return isset($this->vars[$var]) ? $this->vars[$var] : null;
+	}
+
+	/**
+	 * Returns if variable is set or not.
+	 * 
+	 * @param  string $var
 	 * @return boolean
 	 */
-	public function hasVar($var)
+	public function has($var)
 	{
 		return isset($this->vars[$var]);
 	}
 
+	/**
+	 * Removes variable.
+	 * 
+	 * @param string $var
+	 */
+	public function delete($var)
+	{
+		unset($this->vars[$var]);
+	}
 
 	/**
 	 * Loops a block (copies) several times replacing all nested variables with $values
@@ -237,9 +258,9 @@ class Ste
 	}
 
 	/**
-	 * Hides (removes) a block
+	 * Hides (removes) a block.
 	 * 
-	 * @param  string $blockname
+	 * @param string $blockname
 	 */
 	public function hide($blockname)
 	{
@@ -247,7 +268,8 @@ class Ste
 	}
 
 	/**
-	 * Unhides a block
+	 * Unhides a block.
+	 * 
 	 * @param string $blockname
 	 */
 	public function unhide($blockname)
@@ -263,10 +285,10 @@ class Ste
 	 * @param string function name
 	 * @param callback
 	 */
-	public function register_function($name, $callback) {
+	public function registerFunction($name, $callback)
+	{
 		$this->functions[$name] = $callback;
-    }
-
+	}
 
 	/**
 	 * Parses and returns prepared template
@@ -284,8 +306,6 @@ class Ste
 	}
 
 
-
-
 	protected function loadFile($template_file)
 	{
 		// check file extension
@@ -295,12 +315,12 @@ class Ste
 		}
 
 		// try to load a file
-		$template = $this->getTemplate($template_file);
+		$template = $this->loadTemplateFile($template_file);
 		if ($template === false and $this->config["default_path"] and strpos($template_file, DIRECTORY_SEPARATOR) !== 0) {
 			// adding default path to the template
 			$template_file = rtrim($this->config["default_path"], DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $template_file;
 			// try to load a file from default include path
-			$template = $this->getTemplate($template_file);
+			$template = $this->loadTemplateFile($template_file);
 		}
 		if ($template === false) {
 			throw new Exception("Could not load template file $template_file");
@@ -309,6 +329,19 @@ class Ste
 		$this->include_path = realpath(dirname($template_file) . DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
 
 		return $template;
+	}
+
+	/**
+	 * Trying to get the contents of the template file.
+	 * The file should exists and should be readable. If not false will be returned.
+	 *
+	 * @param  string $filename
+	 * @param  string $default
+	 * @return string
+	 */
+	protected function loadTemplateFile($filename)
+	{
+		return (is_file($filename) && is_readable($filename)) ? file_get_contents($filename) : false;
 	}
 
 	protected function parseBlock($subject)
@@ -346,7 +379,15 @@ class Ste
 
 	protected function replaceVarCallback($matches)
 	{
-		return isset($this->vars[$matches[1]]) ? $this->vars[$matches[1]] : false;
+		if (isset($this->vars[$matches[1]])) {
+			if (is_array($this->vars[$matches[1]])) {
+				return $this->vars[$matches[1]][0];
+			} else {
+				return $this->vars[$matches[1]];
+			}
+		}
+
+		return false;
 	}
 
 	protected function replaceArrCallback($matches)
@@ -359,6 +400,7 @@ class Ste
 			}
 			$vars = $vars[$val];
 		}
+
 		return $vars;
 	}
 
@@ -439,17 +481,35 @@ class Ste
 		return preg_replace($this->commentsRegEx, "", $subject);
 	}	
 
+	/**
+	 * @deprecated use has($var);
+	 */
+	public function hasVar($var)
+	{
+		return $this->has($var);
+	}
 
 	/**
-	 * Trying to get the contents of the template file.
-	 * The file should exists and should be readable. If not false will be returned.
-	 *
-	 * @param string $filename
-	 * @param string $default
-	 * @return string
+	 * Sets raw template. If used with no parameter only returns raw template.
+	 * 
+	 * @param      string $template
+	 * @return     string
+	 * @deprecated Use setTemplate() / getTemplate instead
 	 */
-	protected function getTemplate($filename)
+	public function template($template = null)
 	{
-		return (is_file($filename) && is_readable($filename)) ? file_get_contents($filename) : false;
+		if (!is_null($template)) {
+			$this->setTemplate($template);
+		}
+
+		return $this->tpl;
+	}
+
+	/**
+	 * @deprecated use registerFunction($name, $callback)
+	 */
+	public function register_function($name, $callback)
+	{
+		$this->registerFunction($name, $callback);
 	}
 }
