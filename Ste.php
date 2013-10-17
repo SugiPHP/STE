@@ -338,7 +338,7 @@ class Ste
 	{
 		if ($this->timerTime) {
 			$this->parseTime += microtime(true) - $this->timerTime;
-			$this->timerTimer = 0;
+			$this->timerTime = 0;
 		}
 	}
 
