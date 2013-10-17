@@ -1,4 +1,4 @@
-<?php 
+<?php
 /**
  * @package    SugiPHP
  * @subpackage STE
@@ -14,7 +14,7 @@ namespace SugiPHP\STE;
  * <code>
  * $tpl = new Ste();
  * $tpl->load(path/to/template);
- * 
+ *
  * $tpl->set('varname', 'value');
  * $tpl->set('varname', array('subvar1'=> 'value', 'subvar2' => 'onothervalue'));
  * $tpl->set(array('varname1' => 'value1', 'varname2' => 'value2'));
@@ -77,10 +77,10 @@ class Ste
 	 * @var string
 	 */
 	protected $commentsRegEx = '#<!--(.|\s)*?-->#';
-	
+
 	/**
-	 * Template extensions that are allowed. 
-	 * 
+	 * Template extensions that are allowed.
+	 *
 	 * @var array
 	 */
 	protected $allowedExt = array("html", "ste", "tpl", "txt");
@@ -88,56 +88,64 @@ class Ste
 
 	/**
 	 * Configuration options
-	 * 
+	 *
 	 * @var array
 	 */
 	protected $config = array();
 
 	/**
 	 * Loaded template
-	 * 
+	 *
 	 * @var string
 	 */
 	protected $tpl;
 
 	/**
 	 * Variables set with set() method
-	 * 
+	 *
 	 * @var array
 	 */
 	protected $vars = array();
 
 	/**
 	 * Variables for loops
-	 * 
+	 *
 	 * @var array
 	 */
 	protected $loops = array();
 
 	/**
 	 * Which blocks are set not to be rendered
-	 * 
+	 *
 	 * @var array
 	 */
 	protected $hide = array();
 
 	/**
 	 * Registered functions
-	 * 
+	 *
 	 * @var array
 	 */
 	protected $functions = array();
 
 	/**
 	 * Current include path based on last proceeded file
-	 * 
+	 *
 	 * @var string
 	 */
 	protected $include_path;
 
 	/**
+	 * Time spent parsing.
+	 *
+	 * @var integer
+	 */
+	protected $parseTime = 0;
+	protected $timerTime;
+
+	/**
 	 * STE Constructor.
-	 * 
+	 *
 	 * @param array $config
 	 */
 	public function __construct(array $config = array())
@@ -157,7 +165,7 @@ class Ste
 
 	/**
 	 * Sets raw template.
-	 * 
+	 *
 	 * @param string $template
 	 */
 	public function setTemplate($template)
@@ -167,7 +175,7 @@ class Ste
 
 	/**
 	 * Returns raw template.
-	 * 
+	 *
 	 * @return string
 	 */
 	public function getTemplate()
@@ -177,7 +185,7 @@ class Ste
 
 	/**
 	 * Loads a template file.
-	 * 
+	 *
 	 * @param  string filename
 	 * @return string
 	 */
@@ -198,7 +206,7 @@ class Ste
 	 * set(array('title' => 'My Title', 'description' => 'My Description')); // sets 2 keys: title and description
 	 * set('home', array('link' => '/', 'title' => 'Home')); // sets a key 'home' which is an array and can be accessed with {home.link} and {home.title}
 	 * </code>
-	 * 
+	 *
 	 * @param mixed $var
 	 * @param mixed $value
 	 */
@@ -215,7 +223,7 @@ class Ste
 
 	/**
 	 * Returns previously set variable.
-	 * 
+	 *
 	 * @param  string $var
 	 * @return mixed
 	 */
@@ -226,7 +234,7 @@ class Ste
 
 	/**
 	 * Returns if variable is set or not.
-	 * 
+	 *
 	 * @param  string $var
 	 * @return boolean
 	 */
@@ -237,7 +245,7 @@ class Ste
 
 	/**
 	 * Removes variable.
-	 * 
+	 *
 	 * @param string $var
 	 */
 	public function delete($var)
@@ -247,7 +255,7 @@ class Ste
 
 	/**
 	 * Loops a block (copies) several times replacing all nested variables with $values
-	 * 
+	 *
 	 * @param  string $blockname name of the block
 	 * @param  array  $values  array of array of values
 	 */
@@ -259,7 +267,7 @@ class Ste
 
 	/**
 	 * Hides (removes) a block.
-	 * 
+	 *
 	 * @param string $blockname
 	 */
 	public function hide($blockname)
@@ -269,19 +277,19 @@ class Ste
 
 	/**
 	 * Unhides a block.
-	 * 
+	 *
 	 * @param string $blockname
 	 */
 	public function unhide($blockname)
 	{
-		unset($this->hide[$blockname]);	
+		unset($this->hide[$blockname]);
 	}
 
 	/**
-	 * Sets a callback function. 
+	 * Sets a callback function.
 	 * The callback function is invoked each time the template engine
 	 * finds a call to it. In template it should be like {functionname(functionparamethers)}
-	 * 
+	 *
 	 * @param string function name
 	 * @param callback
 	 */
@@ -292,11 +300,13 @@ class Ste
 
 	/**
 	 * Parses and returns prepared template
-	 * 
+	 *
 	 * @return string
 	 */
 	public function parse()
 	{
+		$this->parseTime = 0;
+
 		$tpl = $this->parseBlock($this->tpl);
 		if ($this->config["remove_comments"]) {
 			$tpl = $this->removeHtmlComments($tpl);
@@ -305,6 +315,32 @@ class Ste
 		return $tpl;
 	}
 
+	/**
+	 * Returns time (in seconds) spent parsing the template.
+	 *
+	 * @return float
+	 */
+	public function getParseTime()
+	{
+		return $this->parseTime;
+	}
+
+	protected function startTimer()
+	{
+		if ($this->timerTime) {
+			$this->stopTimer();
+		}
+
+		$this->timerTime = microtime(true);
+	}
+
+	protected function stopTimer()
+	{
+		if ($this->timerTime) {
+			$this->parseTime += microtime(true) - $this->timerTime;
+			$this->timerTimer = 0;
+		}
+	}
 
 	protected function loadFile($template_file)
 	{
@@ -346,6 +382,8 @@ class Ste
 
 	protected function parseBlock($subject)
 	{
+		$this->startTimer();
+
 		// blocks
 		$subject = preg_replace_callback($this->blockRegEx, array(&$this, "replaceBlockCallback"), $subject);
 		// replace variables
@@ -357,6 +395,8 @@ class Ste
 		// check for dynamically included files
 		$subject = preg_replace_callback($this->includeRegEx, array(&$this, "replaceIncludesCallback"), $subject);
 
+		$this->stopTimer();
+
 		return $subject;
 	}
 
@@ -366,10 +406,16 @@ class Ste
 		if (!isset($this->functions[$callback])) {
 			return false;
 		}
+		// timer is stopped, because we don't want to count the time spent on user's functions
+		$this->stopTimer();
 		if ($args = json_decode("[" . $matches[2] ."]", true)) {
-			return call_user_func_array($this->functions[$callback], $args);
+			$result = call_user_func_array($this->functions[$callback], $args);
+		} else {
+			$result = call_user_func($this->functions[$callback]);
 		}
-		return call_user_func($this->functions[$callback]);
+		$this->startTimer();
+
+		return $result;
 	}
 
 	protected function replaceIncludesCallback($matches)
@@ -479,7 +525,7 @@ class Ste
 	 */
 	protected function removeHtmlComments($subject) {
 		return preg_replace($this->commentsRegEx, "", $subject);
-	}	
+	}
 
 	/**
 	 * @deprecated use has($var);
@@ -491,7 +537,7 @@ class Ste
 
 	/**
 	 * Sets raw template. If used with no parameter only returns raw template.
-	 * 
+	 *
 	 * @param      string $template
 	 * @return     string
 	 * @deprecated Use setTemplate() / getTemplate instead
