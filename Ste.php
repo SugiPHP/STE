@@ -420,7 +420,11 @@ class Ste
 
 	protected function replaceIncludesCallback($matches)
 	{
-		return $this->parseBlock($this->loadFile($this->include_path.$matches[1]));
+		$old_include_path = $this->include_path;
+		$part = $this->parseBlock($this->loadFile($this->include_path.$matches[1]));
+		$this->include_path = $old_include_path;
+
+		return $part;
 	}
 
 	protected function replaceVarCallback($matches)
