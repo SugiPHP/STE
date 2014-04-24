@@ -214,7 +214,7 @@ class Ste
 	{
 		if (is_array($var)) {
 			$this->vars = array_merge($this->vars, $var);
-		} elseif (is_array($value) and isset($this->vars[$var]) and is_array($this->vars[$var])) {
+		} elseif (is_array($value) && isset($this->vars[$var]) && is_array($this->vars[$var])) {
 			$this->vars[$var] = array_merge($this->vars[$var], $value);
 		} else {
 			$this->vars[$var] = $value;
@@ -352,7 +352,7 @@ class Ste
 
 		// try to load a file
 		$template = $this->loadTemplateFile($template_file);
-		if ($template === false and $this->config["default_path"] and strpos($template_file, DIRECTORY_SEPARATOR) !== 0) {
+		if (($template === false) && $this->config["default_path"] && (strpos($template_file, DIRECTORY_SEPARATOR) !== 0)) {
 			// adding default path to the template
 			$template_file = rtrim($this->config["default_path"], DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $template_file;
 			// try to load a file from default include path
@@ -494,7 +494,7 @@ class Ste
 			$inloop = true;
 			$kk = array();
 			if (is_array($match)) {
-				foreach ($match as $k=>$m) {
+				foreach ($match as $k => $m) {
 					if (is_array($m)) {
 						$this->loops[$k] = $m;
 					} elseif ($m !== false) {
@@ -527,7 +527,8 @@ class Ste
 	 * @param  string $subject
 	 * @return string
 	 */
-	protected function removeHtmlComments($subject) {
+	protected function removeHtmlComments($subject)
+	{
 		return preg_replace($this->commentsRegEx, "", $subject);
 	}
 
@@ -553,13 +554,5 @@ class Ste
 		}
 
 		return $this->tpl;
-	}
-
-	/**
-	 * @deprecated use registerFunction($name, $callback)
-	 */
-	public function register_function($name, $callback)
-	{
-		$this->registerFunction($name, $callback);
 	}
 }
