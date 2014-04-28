@@ -3,7 +3,7 @@
     "type": "library",
     "description": "Template Engine",
     "keywords": ["templates"],
-    "licence": "MIT",
+    "license": "MIT",
     "authors": [
         {
             "name": "Plamen Popov",
