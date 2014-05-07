@@ -148,7 +148,7 @@ class Ste
 	 *
 	 * @param array $config
 	 */
-	public function __construct(array $config = array())
+	public function __construct($config = array())
 	{
 		// default configurations
 		$defaultConfig = array(
