@@ -66,7 +66,7 @@ class SteTest extends \PHPUnit_Framework_TestCase
 		// no css files
 		$tpl->loop("CSS", false);
 		$tpl->loop("favicon", false);
-		$tpl->loop("li", array(
+		$tpl->loop("items", array(
 			"one", "two", "four"
 		));
 		// include a file as a parameter
@@ -100,7 +100,7 @@ class SteTest extends \PHPUnit_Framework_TestCase
 		// no css files
 		$tpl->assign("CSS", false);
 		$tpl->assign("favicon", false);
-		$tpl->assign("li", array(
+		$tpl->assign("items", array(
 			"one", "two", "four"
 		));
 		// include a file as a parameter

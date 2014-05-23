@@ -35,8 +35,11 @@ class Ste
 	 * ...
 	 * <!-- END blockname -->
 	 * </code>
+	 *
+	 * It worked with only 's' regex modifier.
+	 * with 'smU' regex modifiers it will parse all blocks with the same name
 	 */
-	protected $blockRegEx = '/<!--\s+BEGIN\s+([0-9A-Za-z._-]+)\s+-->(.*)<!--\s+END\s+\1\s+-->/s';
+	protected $blockRegEx = '/<!--\s+BEGIN\s+([0-9A-Za-z._-]+)\s+-->(.*)<!--\s+END\s+\1\s+-->/smU';
 
 	/**
 	 * Regular Expression for file inclusion
