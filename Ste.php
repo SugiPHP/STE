@@ -198,6 +198,24 @@ class Ste
 	}
 
 	/**
+	 * This method combines set() and loop() methods
+	 *
+	 * @param  mixed $var
+	 * @param  mixed $value
+	 */
+	public function assign($var, $value)
+	{
+		// check the value is associative array
+		if (is_array($value) && array_values($value) === $value || $value === false) {
+			// this means we want to loop
+			return $this->loop($var, $value);
+		}
+
+		// set a variable
+		return $this->set($var, $value);
+	}
+
+	/**
 	 * Sets a parameter, or key=>value list
 	 * examples:
 	 * <code>
