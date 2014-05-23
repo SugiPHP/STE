@@ -53,4 +53,38 @@ class SteTest extends \PHPUnit_Framework_TestCase
 		$tpl->set("title", array("bar" => "foo", "href" => "/home"));
 		$this->assertSame('<h1><a href="/home">foo</a></h1>', $tpl->parse());
 	}
+
+	public function testRealExample()
+	{
+		$tpl = new Ste();
+		$tpl->load(__DIR__."/index.html");
+		$tpl->set("lang", "en");
+		$tpl->set("head", array(
+			"description" => "STE Template Engine",
+			"title" => "STE",
+		));
+		// no css files
+		$tpl->loop("CSS", false);
+		$tpl->loop("favicon", false);
+		$tpl->loop("li", array(
+			"one", "two", "four"
+		));
+		// include a file as a parameter
+		$tpl->set("table_template", "table.html");
+		// populates the table similar to the way you'll get the results from the DB
+		$tpl->loop("table", array(
+			array("col1" => "one", "col2" => "foo"),
+			array("col1" => "two", "col2" => "bar"),
+			array("col1" => "four", "col2" => "foobar"),
+		));
+		// populates second table which has some unavailable cells
+		$tpl->loop("table2", array(
+			array("col1" => "one", "col2" => "foo"),
+			array("col1" => "two", "bigger" => 2),
+			array("col1" => "four", "col2" => "foobar"),
+		));
+
+		// check the result, stripping all new lines and tabs for ease implementation of the test
+		$this->assertSame(str_replace(array("\n", "\r", "\r\n", "\t"), "", file_get_contents(__DIR__."/result.html")), str_replace(array("\n", "\r", "\r\n", "\t"), "", $tpl->parse()));
+	}
 }
