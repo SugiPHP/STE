@@ -157,7 +157,9 @@ class Ste
 		$defaultConfig = array(
 			"remove_comments" => false,
 			"default_path"    => false,
-			"allowed_extensions" => $this->allowedExt
+			"allowed_extensions" => $this->allowedExt,
+			"start_symbol"    => "{",
+			"end_symbol"      => "}"
 		);
 
 		// set custom configurations
@@ -326,6 +328,7 @@ class Ste
 	 */
 	public function parse()
 	{
+		$this->prepareRegEx();
 		$this->parseTime = 0;
 
 		$tpl = $this->parseBlock($this->tpl);
@@ -399,6 +402,15 @@ class Ste
 	protected function loadTemplateFile($filename)
 	{
 		return (is_file($filename) && is_readable($filename)) ? file_get_contents($filename) : false;
+	}
+
+	protected function prepareRegEx()
+	{
+		$startSymbol = preg_quote($this->config["start_symbol"], "#");
+		$endSymbol = preg_quote($this->config["end_symbol"], "#");
+		$this->varRegEx = '#'.$startSymbol.'([_a-zA-Z][_a-zA-Z0-9]*)'.$endSymbol.'#sm';
+		$this->arrRegEx = '#'.$startSymbol.'([_a-zA-Z][_a-zA-Z0-9]*\.[_a-zA-Z][_a-zA-Z0-9\.]*)'.$endSymbol.'#sm';
+		$this->funcRegEx = '#'.$startSymbol.'([_a-zA-Z][_a-zA-Z0-9]*)\(([^\)]*)\)'.$endSymbol.'#sm';
 	}
 
 	protected function parseBlock($subject)

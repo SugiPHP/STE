@@ -122,4 +122,56 @@ class SteTest extends \PHPUnit_Framework_TestCase
 		$this->assertSame(str_replace(array("\n", "\r", "\r\n", "\t"), "", file_get_contents(__DIR__."/result.html")), str_replace(array("\n", "\r", "\r\n", "\t"), "", $tpl->parse()));
 	}
 
+	public function testTagSymbols()
+	{
+		$tpl = new Ste(array("start_symbol" => "[", "end_symbol" => "]"));
+		$tpl->setTemplate("Hi [user]!");
+		$tpl->assign("user", "Sebastian");
+		$this->assertSame("Hi Sebastian!", $tpl->parse());
+	}
+
+	public function testTagSymbols2()
+	{
+		$tpl = new Ste(array("start_symbol" => "%", "end_symbol" => "%"));
+		$tpl->setTemplate("Hi %firstname% %lastname%!");
+		$tpl->assign("firstname", "Sebastian");
+		$tpl->assign("lastname", "Lebeau");
+		$this->assertSame("Hi Sebastian Lebeau!", $tpl->parse());
+	}
+
+	public function test2TagSymbols()
+	{
+		$tpl = new Ste(array("start_symbol" => "{{", "end_symbol" => "}}"));
+		$tpl->setTemplate("Hi {{firstname}} {{lastname}}!");
+		$tpl->assign("firstname", "Sebastian");
+		$tpl->assign("lastname", "Lebeau");
+		$this->assertSame("Hi Sebastian Lebeau!", $tpl->parse());
+	}
+
+	public function test3TagSymbols()
+	{
+		$tpl = new Ste(array("start_symbol" => "{{ ", "end_symbol" => " }}"));
+		$tpl->setTemplate("Hi {{ firstname }} {{ lastname }}!");
+		$tpl->assign("firstname", "Sebastian");
+		$tpl->assign("lastname", "Lebeau");
+		$this->assertSame("Hi Sebastian Lebeau!", $tpl->parse());
+	}
+
+	public function testArrayTagSymbols()
+	{
+		$tpl = new Ste(array("start_symbol" => "%", "end_symbol" => "%"));
+		$tpl->setTemplate("Hi %name.first% %name.last%!");
+		$tpl->assign("name", ["first" => "Sebastian", "last" => "Lebeau"]);
+		$this->assertSame("Hi Sebastian Lebeau!", $tpl->parse());
+	}
+
+	public function testFuncTagSymbols()
+	{
+		$tpl = new Ste(array("start_symbol" => "[", "end_symbol" => "]"));
+		$tpl->registerFunction("year", function () {
+			return date("Y");
+		});
+		$tpl->setTemplate("Happy new [year()] year!");
+		$this->assertSame("Happy new ".date("Y")." year!", $tpl->parse());
+	}
 }
