@@ -9,7 +9,9 @@
 
 namespace SugiPHP\STE;
 
-class SteTest extends \PHPUnit_Framework_TestCase
+use PHPUnit_Framework_TestCase;
+
+class SteTest extends PHPUnit_Framework_TestCase
 {
 	public function testOneParam()
 	{
