@@ -39,7 +39,7 @@ class Ste
 	 * It worked with only 's' regex modifier.
 	 * with 'smU' regex modifiers it will parse all blocks with the same name
 	 */
-	protected $blockRegEx = '/<!--\s+BEGIN\s+([0-9A-Za-z._-]+)\s+-->(.*)<!--\s+END\s+\1\s+-->/smU';
+	protected $blockRegEx;
 
 	/**
 	 * Regular Expression for file inclusion
@@ -47,8 +47,8 @@ class Ste
 	 * <!-- INLUDE filename.html -->
 	 * </code>
 	 */
-	protected $includeRegEx = '#<!--\s+INCLUDE\s+([_a-zA-Z0-9\-\.\/]+)\s+-->#sm';
-	// protected $includeRegEx = '#{@include\s+([_a-zA-Z0-9\-\.\/]+)\s+}#sm'; // include with {@include filename.html}
+	// protected $includeRegEx = '#<!--\s+INCLUDE\s+([_a-zA-Z0-9\-\.\/]+)\s+-->#sm';
+	protected $includeRegEx;// = '#{include\s+([_a-zA-Z0-9\-\.\/]+)}#sm'; // include with {include filename.html}
 
 
 	/**
@@ -57,7 +57,7 @@ class Ste
 	 * {varname}
 	 * </code>
 	 */
-	protected $varRegEx = '#{([_a-zA-Z][_a-zA-Z0-9]*)}#sm';
+	protected $varRegEx;
 
 	/**
 	 * Regular Expression Pattern for array keys
@@ -65,7 +65,7 @@ class Ste
 	 * {array.key.subkey}
 	 * </code>
 	 */
-	protected $arrRegEx = '#{([_a-zA-Z][_a-zA-Z0-9]*\.[_a-zA-Z][_a-zA-Z0-9\.]*)}#sm';
+	protected $arrRegEx;
 
 	/**
 	 * Regular Expression Pattern for functions
@@ -73,21 +73,13 @@ class Ste
 	 * {trans('Hello world')}
 	 * </code>
 	 */
-	protected $funcRegEx = '#{([_a-zA-Z][_a-zA-Z0-9]*)\(([^\)]*)\)}#sm';
+	protected $funcRegEx;
 
 	/**
 	 * Regular Expression Pattern for removing html comments
 	 * @var string
 	 */
 	protected $commentsRegEx = '#<!--(.|\s)*?-->#';
-
-	/**
-	 * Template extensions that are allowed.
-	 *
-	 * @var array
-	 */
-	protected $allowedExt = array("html", "ste", "tpl", "txt");
-
 
 	/**
 	 * Configuration options
@@ -136,7 +128,7 @@ class Ste
 	 *
 	 * @var string
 	 */
-	protected $include_path;
+	protected $includePath;
 
 	/**
 	 * Time spent parsing.
@@ -155,11 +147,17 @@ class Ste
 	{
 		// default configurations
 		$defaultConfig = array(
-			"remove_comments" => false,
-			"default_path"    => false,
-			"allowed_extensions" => $this->allowedExt,
-			"start_symbol"    => "{",
-			"end_symbol"      => "}"
+			"remove_comments"    => false,
+			"default_path"       => false,
+			// Template file extensions that are allowed
+			"allowed_extensions" => array("html", "ste", "tpl", "txt"),
+			"start_symbol"       => "{",
+			"end_symbol"         => "}",
+			"start_include"      => "<!-- INCLUDE ", // "{include"
+			"end_include"        => " -->",          // "}"
+			"start_begin_block"  => "<!-- BEGIN ",   // "{block"
+			"start_end_block"    => "<!-- END ",     // "{endblock"
+			"end_block"          => " -->",          // "}"
 		);
 
 		// set custom configurations
@@ -194,9 +192,9 @@ class Ste
 	 * @param  string filename
 	 * @return string
 	 */
-	public function load($template_file)
+	public function load($templateFile)
 	{
-		$template = $this->loadFile($template_file);
+		$template = $this->loadFile($templateFile);
 		$this->setTemplate($template);
 
 		return $template;
@@ -328,8 +326,8 @@ class Ste
 	 */
 	public function parse()
 	{
-		$this->prepareRegEx();
 		$this->parseTime = 0;
+		$this->prepareRegEx();
 
 		$tpl = $this->parseBlock($this->tpl);
 		if ($this->config["remove_comments"]) {
@@ -366,27 +364,27 @@ class Ste
 		}
 	}
 
-	protected function loadFile($template_file)
+	protected function loadFile($templateFile)
 	{
 		// check file extension
-		$ext = pathinfo($template_file, PATHINFO_EXTENSION);
+		$ext = pathinfo($templateFile, PATHINFO_EXTENSION);
 		if (!in_array($ext, $this->config["allowed_extensions"])) {
-			throw new Exception("File $template_file has extension that is not allowed template extension");
+			throw new Exception("File $templateFile has extension that is not allowed template extension");
 		}
 
 		// try to load a file
-		$template = $this->loadTemplateFile($template_file);
-		if (($template === false) && $this->config["default_path"] && (strpos($template_file, DIRECTORY_SEPARATOR) !== 0)) {
+		$template = $this->loadTemplateFile($templateFile);
+		if (($template === false) && $this->config["default_path"] && (strpos($templateFile, DIRECTORY_SEPARATOR) !== 0)) {
 			// adding default path to the template
-			$template_file = rtrim($this->config["default_path"], DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $template_file;
+			$templateFile = rtrim($this->config["default_path"], DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $templateFile;
 			// try to load a file from default include path
-			$template = $this->loadTemplateFile($template_file);
+			$template = $this->loadTemplateFile($templateFile);
 		}
 		if ($template === false) {
-			throw new Exception("Could not load template file $template_file");
+			throw new Exception("Could not load template file $templateFile");
 		}
 
-		$this->include_path = realpath(dirname($template_file) . DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+		$this->include_path = realpath(dirname($templateFile) . DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
 
 		return $template;
 	}
@@ -408,9 +406,20 @@ class Ste
 	{
 		$startSymbol = preg_quote($this->config["start_symbol"], "#");
 		$endSymbol = preg_quote($this->config["end_symbol"], "#");
-		$this->varRegEx = '#'.$startSymbol.'([_a-zA-Z][_a-zA-Z0-9]*)'.$endSymbol.'#sm';
-		$this->arrRegEx = '#'.$startSymbol.'([_a-zA-Z][_a-zA-Z0-9]*\.[_a-zA-Z][_a-zA-Z0-9\.]*)'.$endSymbol.'#sm';
-		$this->funcRegEx = '#'.$startSymbol.'([_a-zA-Z][_a-zA-Z0-9]*)\(([^\)]*)\)'.$endSymbol.'#sm';
+		$this->varRegEx = "#".$startSymbol.'([_a-zA-Z][_a-zA-Z0-9]*)'.$endSymbol.'#sm';
+		$this->arrRegEx = "#".$startSymbol.'([_a-zA-Z][_a-zA-Z0-9]*\.[_a-zA-Z][_a-zA-Z0-9\.]*)'.$endSymbol.'#sm';
+		$this->funcRegEx = "#".$startSymbol.'([_a-zA-Z][_a-zA-Z0-9]*)\(([^\)]*)\)'.$endSymbol.'#sm';
+
+		$startInclude = preg_quote($this->config["start_include"], "#");
+		$endInclude = preg_quote($this->config["end_include"], "#");
+		// #<!--\s+INCLUDE\s+([_a-zA-Z0-9\-\.\/]+)\s+-->#sm
+		$this->includeRegEx = "#".$startInclude.'\s*([_a-zA-Z0-9\-\.\/]+)\s*'.$endInclude.'\s*#sm';
+
+		// #<!--\s+BEGIN\s+([0-9A-Za-z._-]+)\s+-->(.*)<!--\s+END\s+\1\s+-->#smU
+		$startBeginBlock = preg_quote($this->config["start_begin_block"], "#");
+		$startEndBlock = preg_quote($this->config["start_end_block"], "#");
+		$endBlock = preg_quote($this->config["end_block"], "#");
+		$this->blockRegEx = "#".$startBeginBlock.'\s*([0-9A-Za-z._-]+)\s*'.$endBlock.'(.*)'.$startEndBlock.'\s*\1\s*'.$endBlock.'#smU';
 	}
 
 	protected function parseBlock($subject)
@@ -453,9 +462,9 @@ class Ste
 
 	protected function replaceIncludesCallback($matches)
 	{
-		$old_include_path = $this->include_path;
+		$oldIncludePath = $this->include_path;
 		$part = $this->parseBlock($this->loadFile($this->include_path.$matches[1]));
-		$this->include_path = $old_include_path;
+		$this->include_path = $oldIncludePath;
 
 		return $part;
 	}

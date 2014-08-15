@@ -174,4 +174,86 @@ class SteTest extends \PHPUnit_Framework_TestCase
 		$tpl->setTemplate("Happy new [year()] year!");
 		$this->assertSame("Happy new ".date("Y")." year!", $tpl->parse());
 	}
+
+	public function testWithCustomBlocks()
+	{
+		$tpl = new Ste(array(
+			"start_include" => "{include",
+			"end_include" => "}",
+			"start_begin_block"  => "{begin",
+			"start_end_block"    => "{end",
+			"end_block"          => "}",
+		));
+		$tpl->load(__DIR__."/custom.html");
+		$tpl->assign("lang", "en");
+		$tpl->assign("head", array(
+			"description" => "STE Template Engine",
+			"title" => "STE",
+		));
+		// no css files
+		$tpl->assign("CSS", false);
+		$tpl->assign("favicon", false);
+		$tpl->assign("items", array(
+			"one", "two", "four"
+		));
+		// include a file as a parameter
+		$tpl->assign("table_template", "customtable.html");
+		// populates the table similar to the way you'll get the results from the DB
+		$tpl->assign("table", array(
+			array("col1" => "one", "col2" => "foo"),
+			array("col1" => "two", "col2" => "bar"),
+			array("col1" => "four", "col2" => "foobar"),
+		));
+		// populates second table which has some unavailable cells
+		$tpl->assign("table2", array(
+			array("col1" => "one", "col2" => "foo"),
+			array("col1" => "two", "bigger" => 2),
+			array("col1" => "four", "col2" => "foobar"),
+		));
+
+		// check the result, stripping all new lines and tabs for ease implementation of the test
+		$this->assertSame(str_replace(array("\n", "\r", "\r\n", "\t"), "", file_get_contents(__DIR__."/result.html")), str_replace(array("\n", "\r", "\r\n", "\t"), "", $tpl->parse()));
+	}
+
+	public function testCustomTags()
+	{
+		$tpl = new Ste(array(
+			"start_include"      => "%include",
+			"end_include"        => "%",
+			"start_begin_block"  => "%block",
+			"start_end_block"    => "%endblock",
+			"end_block"          => "%",
+			"start_symbol"       => "%",
+			"end_symbol"         => "%"
+		));
+		$tpl->load(__DIR__."/custom2.html");
+		$tpl->assign("lang", "en");
+		$tpl->assign("head", array(
+			"description" => "STE Template Engine",
+			"title" => "STE",
+		));
+		// no css files
+		$tpl->assign("CSS", false);
+		$tpl->assign("favicon", false);
+		$tpl->assign("items", array(
+			"one", "two", "four"
+		));
+		// include a file as a parameter
+		$tpl->assign("table_template", "customtable2.html");
+		// populates the table similar to the way you'll get the results from the DB
+		$tpl->assign("table", array(
+			array("col1" => "one", "col2" => "foo"),
+			array("col1" => "two", "col2" => "bar"),
+			array("col1" => "four", "col2" => "foobar"),
+		));
+		// populates second table which has some unavailable cells
+		$tpl->assign("table2", array(
+			array("col1" => "one", "col2" => "foo"),
+			array("col1" => "two", "bigger" => 2),
+			array("col1" => "four", "col2" => "foobar"),
+		));
+
+		// check the result, stripping all new lines and tabs for ease implementation of the test
+		$this->assertSame(str_replace(array("\n", "\r", "\r\n", "\t"), "", file_get_contents(__DIR__."/result.html")), str_replace(array("\n", "\r", "\r\n", "\t"), "", $tpl->parse()));
+	}
 }
