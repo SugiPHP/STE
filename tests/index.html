@@ -1,14 +1,13 @@
 <!DOCTYPE html>
-<html lang="{lang}">
+<html>
 <head>
-	<meta charset="utf-8" />
-	<title>{head.title}</title>
-	<meta name="description" content="{head.description}" />
-<!-- BEGIN CSS --><link rel="stylesheet" href="/css/{CSS.filename}" /><!-- END CSS -->
-<!-- BEGIN favicon --><link rel="shortcut icon" href="{favicon}" /><!-- END favicon -->
+	<title>{title}</title>
 </head>
 <body>
-<!-- INCLUDE body.html -->
-<!-- INCLUDE {table_template} -->
+	<ul id="navigation">
+		<!-- BEGIN navi -->
+		<li><a href="{navi.link}">{navi.title}</a></li>
+		<!-- END navi -->
+	</ul>
 </body>
 </html>

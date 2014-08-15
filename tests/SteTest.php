@@ -59,7 +59,7 @@ class SteTest extends PHPUnit_Framework_TestCase
 	public function testRealExample()
 	{
 		$tpl = new Ste();
-		$tpl->load(__DIR__."/index.html");
+		$tpl->load(__DIR__."/test.html");
 		$tpl->set("lang", "en");
 		$tpl->set("head", array(
 			"description" => "STE Template Engine",
@@ -93,7 +93,7 @@ class SteTest extends PHPUnit_Framework_TestCase
 	public function testRealExampleWithAssign()
 	{
 		$tpl = new Ste();
-		$tpl->load(__DIR__."/index.html");
+		$tpl->load(__DIR__."/test.html");
 		$tpl->assign("lang", "en");
 		$tpl->assign("head", array(
 			"description" => "STE Template Engine",
@@ -257,5 +257,19 @@ class SteTest extends PHPUnit_Framework_TestCase
 
 		// check the result, stripping all new lines and tabs for ease implementation of the test
 		$this->assertSame(str_replace(array("\n", "\r", "\r\n", "\t"), "", file_get_contents(__DIR__."/result.html")), str_replace(array("\n", "\r", "\r\n", "\t"), "", $tpl->parse()));
+	}
+
+	public function testExampleFromReadme()
+	{
+		$tpl = new Ste();
+		$tpl->load(__DIR__."/index.html");
+		$tpl->assign("title", "My Site");
+		$tpl->assign("navi", array(
+			array("link" => "/blog", "title" => "My Blog"),
+			array("link" => "http://gamegix.com", "title" => "Online games")
+		));
+
+		// check the result, stripping all new lines and tabs for ease implementation of the test
+		$this->assertSame(str_replace(array("\n", "\r", "\r\n", "\t"), "", file_get_contents(__DIR__."/indexresult.html")), str_replace(array("\n", "\r", "\r\n", "\t"), "", $tpl->parse()));
 	}
 }
