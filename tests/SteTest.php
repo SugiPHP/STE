@@ -1,10 +1,10 @@
 <?php
 /**
- * @package    SugiPHP
- * @subpackage STE
- * @category   tests
- * @author     Plamen Popov <tzappa@gmail.com>
- * @license    http://opensource.org/licenses/mit-license.php (MIT License)
+ * PHP Unit tests for STE class.
+ *
+ * @package SugiPHP.STE
+ * @author  Plamen Popov <tzappa@gmail.com>
+ * @license http://opensource.org/licenses/mit-license.php (MIT License)
  */
 
 namespace SugiPHP\STE;
@@ -61,16 +61,11 @@ class SteTest extends PHPUnit_Framework_TestCase
 		$tpl = new Ste();
 		$tpl->load(__DIR__."/test.html");
 		$tpl->set("lang", "en");
-		$tpl->set("head", array(
-			"description" => "STE Template Engine",
-			"title" => "STE",
-		));
+		$tpl->set("head", array("description" => "STE Template Engine", "title" => "STE"));
 		// no css files
 		$tpl->loop("CSS", false);
 		$tpl->loop("favicon", false);
-		$tpl->loop("items", array(
-			"one", "two", "four"
-		));
+		$tpl->loop("items", array("one", "two", "four"));
 		// include a file as a parameter
 		$tpl->set("table_template", "table.html");
 		// populates the table similar to the way you'll get the results from the DB
@@ -102,9 +97,7 @@ class SteTest extends PHPUnit_Framework_TestCase
 		// no css files
 		$tpl->assign("CSS", false);
 		$tpl->assign("favicon", false);
-		$tpl->assign("items", array(
-			"one", "two", "four"
-		));
+		$tpl->assign("items", array("one", "two", "four"));
 		// include a file as a parameter
 		$tpl->assign("table_template", "table.html");
 		// populates the table similar to the way you'll get the results from the DB
@@ -237,9 +230,7 @@ class SteTest extends PHPUnit_Framework_TestCase
 		// no css files
 		$tpl->assign("CSS", false);
 		$tpl->assign("favicon", false);
-		$tpl->assign("items", array(
-			"one", "two", "four"
-		));
+		$tpl->assign("items", array("one", "two", "four"));
 		// include a file as a parameter
 		$tpl->assign("table_template", "customtable2.html");
 		// populates the table similar to the way you'll get the results from the DB

@@ -1,7 +1,7 @@
 STE
 ===
 
-STE stands for Simple Template Engine. It is intended to be secure, lightweight and fast.
+STE stands for Sugi (or Simple) Template Engine. It is intended to be secure, lightweight and fast.
 
 Unlike some of the famous template engines (like Smarty, Twig, etc.) the template code is
 not converted (compiled) to PHP code and then evaluated, but parsed on the fly. Variables and

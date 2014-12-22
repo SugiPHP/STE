@@ -1,9 +1,10 @@
 <?php
 /**
- * @package    SugiPHP
- * @subpackage STE
- * @author     Plamen Popov <tzappa@gmail.com>
- * @license    http://opensource.org/licenses/mit-license.php (MIT License)
+ * Template Engine Class.
+ *
+ * @package SugiPHP.STE
+ * @author  Plamen Popov <tzappa@gmail.com>
+ * @license http://opensource.org/licenses/mit-license.php (MIT License)
  */
 
 namespace SugiPHP\STE;
@@ -189,7 +190,8 @@ class Ste
 	/**
 	 * Loads a template file.
 	 *
-	 * @param  string filename
+	 * @param string filename
+	 *
 	 * @return string
 	 */
 	public function load($templateFile)
@@ -203,8 +205,8 @@ class Ste
 	/**
 	 * This method combines set() and loop() methods
 	 *
-	 * @param  mixed $var
-	 * @param  mixed $value
+	 * @param mixed $var
+	 * @param mixed $value
 	 */
 	public function assign($var, $value)
 	{
@@ -245,7 +247,8 @@ class Ste
 	/**
 	 * Returns previously set variable.
 	 *
-	 * @param  string $var
+	 * @param string $var
+	 *
 	 * @return mixed
 	 */
 	public function get($var)
@@ -256,7 +259,8 @@ class Ste
 	/**
 	 * Returns if variable is set or not.
 	 *
-	 * @param  string $var
+	 * @param string $var
+	 *
 	 * @return boolean
 	 */
 	public function has($var)
@@ -277,13 +281,12 @@ class Ste
 	/**
 	 * Loops a block (copies) several times replacing all nested variables with $values
 	 *
-	 * @param  string $blockname name of the block
-	 * @param  array  $values  array of array of values
+	 * @param string $blockname name of the block
+	 * @param array  $values  array of array of values
 	 */
 	public function loop($blockname, $values = array())
 	{
 		$this->loops[$blockname] = $values;
-		//$this->vars[$blockname] = $values;
 	}
 
 	/**
@@ -393,8 +396,9 @@ class Ste
 	 * Trying to get the contents of the template file.
 	 * The file should exists and should be readable. If not false will be returned.
 	 *
-	 * @param  string $filename
-	 * @param  string $default
+	 * @param string $filename
+	 * @param string $default
+	 *
 	 * @return string
 	 */
 	protected function loadTemplateFile($filename)
@@ -566,7 +570,8 @@ class Ste
 	/**
 	 * Removes unwanted HTML comments
 	 *
-	 * @param  string $subject
+	 * @param string $subject
+	 *
 	 * @return string
 	 */
 	protected function removeHtmlComments($subject)
@@ -585,8 +590,10 @@ class Ste
 	/**
 	 * Sets raw template. If used with no parameter only returns raw template.
 	 *
-	 * @param      string $template
-	 * @return     string
+	 * @param string $template
+	 *
+	 * @return string
+	 *
 	 * @deprecated Use setTemplate() / getTemplate instead
 	 */
 	public function template($template = null)
