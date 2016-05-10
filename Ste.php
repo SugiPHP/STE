@@ -387,7 +387,7 @@ class Ste
 			throw new Exception("Could not load template file $templateFile");
 		}
 
-		$this->include_path = realpath(dirname($templateFile) . DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+		$this->includePath = realpath(dirname($templateFile) . DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
 
 		return $template;
 	}
@@ -466,9 +466,9 @@ class Ste
 
 	protected function replaceIncludesCallback($matches)
 	{
-		$oldIncludePath = $this->include_path;
-		$part = $this->parseBlock($this->loadFile($this->include_path.$matches[1]));
-		$this->include_path = $oldIncludePath;
+		$oldIncludePath = $this->includePath;
+		$part = $this->parseBlock($this->loadFile($this->includePath.$matches[1]));
+		$this->includePath = $oldIncludePath;
 
 		return $part;
 	}
