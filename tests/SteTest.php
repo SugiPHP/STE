@@ -261,4 +261,79 @@ class SteTest extends \PHPUnit_Framework_TestCase
         // check the result, stripping all new lines and tabs for ease implementation of the test
         $this->assertSame(str_replace(array("\n", "\r", "\r\n", "\t"), "", file_get_contents(__DIR__."/indexresult.html")), str_replace(array("\n", "\r", "\r\n", "\t"), "", $tpl->parse()));
     }
+
+    public function testHasGet()
+    {
+        $tpl = new Ste();
+        $this->assertFalse($tpl->has("title"));
+        $this->assertNull($tpl->get("title"));
+    }
+
+    public function testSet()
+    {
+        $tpl = new Ste();
+        $tpl->set("title", "My Blog");
+        $this->assertSame("My Blog", $tpl->get("title"));
+        $this->assertTrue($tpl->has("title"));
+    }
+
+    public function testSetArrayMerge()
+    {
+        $tpl = new Ste();
+        $tpl->set("arr", array("one" => "1", "two" => "2"));
+        $tpl->set("arr", array("three" => "3"));
+        $this->assertSame(array("one" => "1", "two" => "2", "three" => "3"), $tpl->get("arr"));
+    }
+
+    public function testDelete()
+    {
+        $tpl = new Ste();
+        $tpl->set("title", "My Blog");
+        $tpl->delete("title");
+        $this->assertFalse($tpl->has("title"));
+        $this->assertNull($tpl->get("title"));
+    }
+
+    public function testCommentsAreNotRemovedByDefault()
+    {
+        $tpl = new Ste();
+        $tpl->load(__DIR__."/comments.html");
+        $this->assertSame(file_get_contents(__DIR__."/comments.html"), $tpl->parse());
+    }
+
+    public function testRemoveComments()
+    {
+        $tpl = new Ste(array("remove_comments" => true));
+        $tpl->load(__DIR__."/comments.html");
+        $this->assertNotSame(file_get_contents(__DIR__."/comments.html"), $tpl->parse());
+        $this->assertEquals("<h1>title</h1>", trim($tpl->parse()));
+    }
+
+    public function testParseTimeIsNot0()
+    {
+        $tpl = new Ste();
+        $tpl->load(__DIR__."/index.html");
+        $tpl->parse();
+        $this->assertTrue($tpl->getParseTime() > 0);
+    }
+
+    public function testAllowedExtensionThrowsExceptionIfTheFileHasWrongExtension()
+    {
+        $tpl = new Ste(array("allowed_extensions" => "txt"));
+        $this->setExpectedException(\SugiPHP\STE\Exception::class);
+        $tpl->load(__DIR__."/index.html");
+    }
+
+    public function testAllowedExtensionsThrowsException()
+    {
+        $tpl = new Ste(array("allowed_extensions" => array("ste", "txt")));
+        $this->setExpectedException(\SugiPHP\STE\Exception::class);
+        $tpl->load(__DIR__."/index.html");
+    }
+
+    public function testAllowedExtension()
+    {
+        $tpl = new Ste(array("allowed_extensions" => "html"));
+        $tpl->load(__DIR__."/index.html");
+    }
 }

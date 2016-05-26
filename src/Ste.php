@@ -1,7 +1,5 @@
 <?php
 /**
- * Template Engine Class.
- *
  * @package SugiPHP.STE
  * @author  Plamen Popov <tzappa@gmail.com>
  * @license http://opensource.org/licenses/mit-license.php (MIT License)
@@ -10,22 +8,7 @@
 namespace SugiPHP\STE;
 
 /**
- * Sugi Template Engine
- *
- * <code>
- * $tpl = new Ste();
- * $tpl->load(path/to/template);
- *
- * $tpl->set('varname', 'value');
- * $tpl->set('varname', array('subvar1'=> 'value', 'subvar2' => 'onothervalue'));
- * $tpl->set(array('varname1' => 'value1', 'varname2' => 'value2'));
- * $tpl->loop('blockname', array( array('var1' => 'val1', 'var2' => 'val2'), array('var1' => 'otherval') ));
- * $tpl->hide('unwantendblock');
- * $tpl->unhide('someblockthatwashidden');
- * $tpl->registerFunction('__', '__'); // for translations
- *
- * echo $tpl->parse();
- * </code>
+ * Template Engine Class
  */
 class Ste
 {
@@ -225,22 +208,20 @@ class Ste
      * examples:
      * <code>
      * set('title', 'My Title'); // sets the title key
-     * set('title'); // unsets the title key
      * set(array('title' => 'My Title', 'description' => 'My Description')); // sets 2 keys: title and description
      * set('home', array('link' => '/', 'title' => 'Home')); // sets a key 'home' which is an array and can be accessed with {home.link} and {home.title}
      * </code>
      *
-     * @param mixed $var
+     * @param mixed $key
      * @param mixed $value
      */
-    public function set($var, $value)
+    public function set($key, $value)
     {
-        if (is_array($var)) {
-            $this->vars = array_merge($this->vars, $var);
-        } elseif (is_array($value) && isset($this->vars[$var]) && is_array($this->vars[$var])) {
-            $this->vars[$var] = array_merge($this->vars[$var], $value);
+        if (is_array($value) && isset($this->vars[$key]) && is_array($this->vars[$key])) {
+            // merging arrays can be dropped in future versions
+            $this->vars[$key] = array_merge($this->vars[$key], $value);
         } else {
-            $this->vars[$var] = $value;
+            $this->vars[$key] = $value;
         }
     }
 
@@ -370,8 +351,7 @@ class Ste
     protected function loadFile($templateFile)
     {
         // check file extension
-        $ext = pathinfo($templateFile, PATHINFO_EXTENSION);
-        if (!in_array($ext, $this->config["allowed_extensions"])) {
+        if (!$this->checkExtension($templateFile)) {
             throw new Exception("File $templateFile has extension that is not allowed template extension");
         }
 
@@ -390,6 +370,19 @@ class Ste
         $this->includePath = realpath(dirname($templateFile) . DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
 
         return $template;
+    }
+
+    protected function checkExtension($templateFile)
+    {
+        $ext = pathinfo($templateFile, PATHINFO_EXTENSION);
+        if (is_array($this->config["allowed_extensions"]) && in_array($ext, $this->config["allowed_extensions"])) {
+            return true;
+        }
+        if ($ext == $this->config["allowed_extensions"]) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
