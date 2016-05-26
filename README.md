@@ -1,5 +1,6 @@
-STE
-===
+# STE
+
+[![Build Status](https://travis-ci.org/SugiPHP/STE.svg?branch=master)](https://travis-ci.org/SugiPHP/STE)
 
 STE stands for Sugi (or Simple) Template Engine. It is intended to be secure, lightweight and fast.
 
@@ -13,8 +14,7 @@ injected in a template files. And here comes the cons using this approach - all 
 should be done in the PHP code and then passed to the template engine. STE does not recognize
 even simplest if-then-else statements.
 
-Basic Use
----------
+## Usage
 
 Template file: index.html
 ```HTML
