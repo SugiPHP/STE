@@ -15,8 +15,7 @@
     },
     "autoload": {
         "psr-4": {
-            "SugiPHP\\STE\\": ""
+            "SugiPHP\\STE\\": "src"
         }
-    },
-    "minimum-stability": "dev"
+    }
 }
